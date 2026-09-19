@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Vocabulary Trainer | Казахстан</title>
+    <style>
+        :root {
+            --kaz-blue: #00afca;
+            --kaz-blue-dark: #008398;
+            --kaz-blue-light: #e6f7fa;
+            --kaz-gold: #fec500;
+            --kaz-gold-hover: #e5b200;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --card-bg: #ffffff;
+            --bg-main: #f0f9ff;
+            --success: #10b981;
+            --success-bg: #d1fae5;
+            --error: #ef4444;
+            --error-bg: #fee2e2;
+            --radius: 16px;
+            --shadow: 0 10px 25px -5px rgba(0, 175, 202, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            background-image: radial-gradient(var(--kaz-blue-light) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 2px solid var(--kaz-blue);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Казахстанская орнаментная полоса в шапке */
+        .header-banner {
+            background-color: var(--kaz-blue);
+            padding: 20px 16px;
+            text-align: center;
+            color: #ffffff;
+            position: relative;
+            border-bottom: 4px solid var(--kaz-gold);
+        }
+
+        .header-banner h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .sun-icon {
+            color: var(--kaz-gold);
+            font-size: 1.5rem;
+        }
+
+        .header-banner p {
+            font-size: 0.85rem;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        /* Выбор режима */
+        .mode-container {
+            padding: 16px;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .mode-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .mode-btn {
+            background: var(--bg-main);
+            border: 1.5px solid #cbd5e1;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .mode-btn:hover {
+            border-color: var(--kaz-blue);
+            background: var(--kaz-blue-light);
+        }
+
+        .mode-btn.active {
+            background: var(--kaz-blue);
+            color: #ffffff;
+            border-color: var(--kaz-blue-dark);
+            box-shadow: 0 4px 6px -1px rgba(0, 175, 202, 0.3);
+        }
+
+        /* Статистика */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 8px 4px;
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .stat-total .stat-value { color: var(--kaz-blue-dark); }
+        .stat-correct .stat-value { color: var(--success); }
+        .stat-wrong .stat-value { color: var(--error); }
+
+        /* Игровое поле */
+        .quiz-body {
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .word-card {
+            background: var(--kaz-blue-light);
+            border: 2px dashed var(--kaz-blue);
+            border-radius: 12px;
+            padding: 24px 16px;
+            text-align: center;
+        }
+
+        .target-word {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--kaz-blue-dark);
+            word-break: break-word;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            min-height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--kaz-blue);
+            background: #f0fdfa;
+            transform: translateY(-2px);
+        }
+
+        .option-btn.correct {
+            background: var(--success-bg) !important;
+            border-color: var(--success) !important;
+            color: #065f46 !important;
+            font-weight: 700;
+        }
+
+        .option-btn.wrong {
+            background: var(--error-bg) !important;
+            border-color: var(--error) !important;
+            color: #991b1b !important;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        /* Обратная связь и кнопка Next */
+        .feedback-area {
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .feedback-msg {
+            font-size: 1rem;
+            font-weight: 700;
+            text-align: center;
+            display: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .feedback-msg.correct {
+            display: block;
+            background: var(--success-bg);
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .feedback-msg.wrong {
+            display: block;
+            background: var(--error-bg);
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .next-btn {
+            background: var(--kaz-gold);
+            color: var(--text-dark);
+            border: none;
+            padding: 14px 32px;
+            font-size: 1rem;
+            font-weight: 800;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(254, 197, 0, 0.4);
+            display: none;
+            width: 100%;
+            max-width: 240px;
+        }
+
+        .next-btn:hover {
+            background: var(--kaz-gold-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 500px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            .target-word {
+                font-size: 1.35rem;
+            }
+            .header-banner h1 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-banner">
+        <h1><span class="sun-icon">☀️</span> Medical Terms Trainer</h1>
+        <p>Медициналық терминдер тренажеры • Казахстан</p>
+    </div>
+
+    <!-- Выбор направления перевода -->
+    <div class="mode-container">
+        <div class="mode-label">Бағытты таңдаңыз / Выберите направление:</div>
+        <div class="mode-grid">
+            <button class="mode-btn active" onclick="setMode('ENG_KAZ')">ENG ➔ QAZ</button>
+            <button class="mode-btn" onclick="setMode('ENG_RUS')">ENG ➔ RUS</button>
+            <button class="mode-btn" onclick="setMode('KAZ_ENG')">QAZ ➔ ENG</button>
+            <button class="mode-btn" onclick="setMode('RUS_ENG')">RUS ➔ ENG</button>
+        </div>
+    </div>
+
+    <!-- Панель статистики -->
+    <div class="stats-bar">
+        <div class="stat-box stat-total">
+            <div class="stat-value" id="stat-passed">0</div>
+            <div class="stat-label">Өтілді / Пройдено</div>
+        </div>
+        <div class="stat-box stat-correct">
+            <div class="stat-value" id="stat-correct">0</div>
+            <div class="stat-label">Дұрыс / Верно</div>
+        </div>
+        <div class="stat-box stat-wrong">
+            <div class="stat-value" id="stat-wrong">0</div>
+            <div class="stat-label">Қате / Ошибка</div>
+        </div>
+    </div>
+
+    <!-- Игровой блок -->
+    <div class="quiz-body">
+        <div class="word-card">
+            <div class="target-word" id="target-word">...</div>
+        </div>
+
+        <div class="options-grid" id="options-grid">
+            <!-- Кнопки вариантов ответов генерируются JS -->
+        </div>
+
+        <div class="feedback-area">
+            <div class="feedback-msg" id="feedback-msg"></div>
+            <button class="next-btn" id="next-btn" onclick="nextQuestion()">Келесі / Next ➔</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// База медицинских терминов (English, Kazakh, Russian)
+const vocabDb = [
+    { en: "Chest tightness", kk: "Кеуденің қысылуы", ru: "Стеснение в груди" },
+    { en: "Cough", kk: "Жөтел", ru: "Кашель" },
+    { en: "Crackles", kk: "Майда көпіршікті сырылдар", ru: "Мелкопузырчатые хрипы" },
+    { en: "Effusion", kk: "Плевралық сұйықтық", ru: "Выпот" },
+    { en: "Hemoptysis", kk: "Қан түкіру", ru: "Кровохарканье" },
+    { en: "Malaise", kk: "Әлсіздік / Мазасыздану", ru: "Недомогание" },
+    { en: "Dyspnea", kk: "Ентігу", ru: "Одышка" },
+    { en: "Sputum", kk: "Қақрық", ru: "Мокрота" },
+    { en: "Wheezing", kk: "Ысқырықты дем", ru: "Свистящее дыхание" },
+    { en: "Stridor", kk: "Стридор", ru: "Стридор" },
+    { en: "Dehydration", kk: "Сусыздану", ru: "Обезвоживание" },
+    { en: "Edema", kk: "Ісіну", ru: "Отек" },
+    { en: "Fatigue", kk: "Шаршағыштық", ru: "Усталость" },
+    { en: "Flank pain", kk: "Бүйірдегі ауырсыну", ru: "Боль в боку" },
+    { en: "Hypertension", kk: "Жоғары қан қысымы", ru: "Гипертония" },
+    { en: "Blurred vision", kk: "Көздің бұлдырауы", ru: "Затуманенное зрение" },
+    { en: "Headache", kk: "Бас ауруы", ru: "Головная боль" },
+    { en: "Neck stiffness", kk: "Желке бұлшықеттерінің сіресуі", ru: "Ригидность затылочных мышц" },
+    { en: "Numbness", kk: "Ұю / Жансыздану", ru: "Онемение" },
+    { en: "Seizure", kk: "Ұстама / Талма", ru: "Судороги / Припадок" },
+    { en: "Slurred speech", kk: "Түсініксіз сөйлеу", ru: "Смазанная речь" },
+    { en: "Syncope", kk: "Талып қалу", ru: "Обморок" },
+    { en: "Tingling", kk: "Шаншу", ru: "Покалывание" },
+    { en: "Vertigo", kk: "Бас айналуы (системдік)", ru: "Головокружение (системное)" },
+    { en: "Angina", kk: "Стенокардия", ru: "Стенокардия" },
+    { en: "Dizziness", kk: "Бас айналу", ru: "Головокружение" },
+    { en: "Pallor", kk: "Бозару", ru: "Бледность" },
+    { en: "Palpitations", kk: "Жүректің жиі соғуы", ru: "Учащенное сердцебиение" },
+    { en: "Tinnitus", kk: "Құлақтағы шу", ru: "Шум в ушах" },
+    { en: "Fever", kk: "Дене қызуының көтерілуі", ru: "Лихорадка / Жар" },
+    { en: "Rash", kk: "Бөртпе", ru: "Сыпь" },
+    { en: "Stiffness", kk: "Сіресу / Қозғалыс шектелуі", ru: "Скованность" },
+    { en: "Swelling", kk: "Ісіну / Ісік", ru: "Припухлость / Отек" },
+    { en: "Sore throat", kk: "Тамақтың ауруы", ru: "Боль в горле" },
+    { en: "Bleeding", kk: "Қан кету", ru: "Кровотечение" },
+    { en: "Bloating", kk: "Іштің кебуі", ru: "Вздутие живота" },
+    { en: "Constipation", kk: "Іш қату", ru: "Запор" },
+    { en: "Heartburn", kk: "Қыжыл", ru: "Изжога" },
+    { en: "Jaundice", kk: "Сары ауру", ru: "Желтуха" },
+    { en: "Nausea", kk: "Көңіл айну", ru: "Тошнота" },
+    { en: "Vomiting", kk: "Құсу", ru: "Рвота" },
+    { en: "Weight loss", kk: "Салмақ жоғалту", ru: "Потеря веса" },
+    { en: "Fracture", kk: "Сынық", ru: "Перелом" },
+    { en: "Insomnia", kk: "Ұйқысыздық", ru: "Бессонница" },
+    { en: "Itching", kk: "Қышыну", ru: "Зуд" },
+    { en: "Loss of consciousness", kk: "Ес-түссіз болу", ru: "Потеря сознания" },
+    { en: "Joint pain", kk: "Буынның ауырсынуы", ru: "Боль в суставах" },
+    { en: "Muscle weakness", kk: "Бұлшықет әлсіздігі", ru: "Мышечная слабость" }
+];
+
+let currentMode = 'ENG_KAZ';
+let currentQuestion = null;
+let isAnswered = false;
+
+const stats = {
+    passed: 0,
+    correct: 0,
+    wrong: 0
+};
+
+// Функция выбора режима
+function setMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('onclick').includes(mode)) {
+            btn.classList.add('active');
+        }
+    });
+    nextQuestion();
+}
+
+// Получение конфигурации языков для текущего режима
+function getLangConfig() {
+    switch (currentMode) {
+        case 'ENG_KAZ': return { src: 'en', target: 'kk' };
+        case 'ENG_RUS': return { src: 'en', target: 'ru' };
+        case 'KAZ_ENG': return { src: 'kk', target: 'en' };
+        case 'RUS_ENG': return { src: 'ru', target: 'en' };
+    }
+}
+
+// Вспомогательная функция перемешивания массива
+function shuffle(array) {
+    return [...array].sort(() => Math.random() - 0.5);
+}
+
+// Генерация нового вопроса
+function nextQuestion() {
+    isAnswered = false;
+    const config = getLangConfig();
+
+    // Скрываем сообщения и кнопку "Далее"
+    const feedback = document.getElementById('feedback-msg');
+    feedback.className = 'feedback-msg';
+    feedback.style.display = 'none';
+    document.getElementById('next-btn').style.display = 'none';
+
+    // Выбираем случайное целевое слово
+    const targetItem = vocabDb[Math.floor(Math.random() * vocabDb.length)];
+    const targetWord = targetItem[config.src];
+    const correctAnswer = targetItem[config.target];
+
+    // Выбираем 3 дистрактора (неправильных ответа)
+    const otherItems = vocabDb.filter(item => item[config.target] !== correctAnswer);
+    const distractors = shuffle(otherItems).slice(0, 3).map(item => item[config.target]);
+
+    // Формируем и перемешиваем список 4 вариантов
+    const options = shuffle([correctAnswer, ...distractors]);
+
+    currentQuestion = {
+        targetWord,
+        correctAnswer,
+        options
+    };
+
+    // Отрисовка
+    document.getElementById('target-word').textContent = targetWord;
+    
+    const optionsGrid = document.getElementById('options-grid');
+    optionsGrid.innerHTML = '';
+
+    options.forEach((optText, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = optText;
+        btn.onclick = () => handleAnswer(optText, btn);
+        optionsGrid.appendChild(btn);
+    });
+}
+
+// Обработка ответа игрока
+function handleAnswer(selectedAnswer, selectedBtn) {
+    if (isAnswered) return;
+    isAnswered = true;
+
+    stats.passed++;
+    const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
+
+    const allButtons = document.querySelectorAll('.option-btn');
+    allButtons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.textContent === currentQuestion.correctAnswer) {
+            btn.classList.add('correct');
+        }
+    });
+
+    const feedback = document.getElementById('feedback-msg');
+
+    if (isCorrect) {
+        stats.correct++;
+        selectedBtn.classList.add('correct');
+        feedback.textContent = 'Дұрыс! / Правильно! ✨';
+        feedback.className = 'feedback-msg correct';
+    } else {
+        stats.wrong++;
+        selectedBtn.classList.add('wrong');
+        feedback.textContent = `Қате! / Неправильно! Дұрыс жауабы: "${currentQuestion.correctAnswer}"`;
+        feedback.className = 'feedback-msg wrong';
+    }
+
+    feedback.style.display = 'block';
+    document.getElementById('next-btn').style.display = 'inline-block';
+
+    updateStats();
+}
+
+// Обновление счётчиков
+function updateStats() {
+    document.getElementById('stat-passed').textContent = stats.passed;
+    document.getElementById('stat-correct').textContent = stats.correct;
+    document.getElementById('stat-wrong').textContent = stats.wrong;
+}
+
+// Первый запуск
+nextQuestion();
+</script>
+</body>
+</html>
