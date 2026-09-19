@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>Medical English Quiz</title>
+<style>
+:root {
+  --primary:#0f766e; --primary2:#115e59; --bg:#f1f5f9; --card:#fff;
+  --text:#172033; --muted:#64748b; --border:#dbe3ea;
+  --good:#15803d; --goodbg:#f0fdf4; --bad:#b91c1c; --badbg:#fef2f2;
+}
+* { box-sizing:border-box; }
+html { -webkit-text-size-adjust:100%; }
+body {
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  line-height:1.45; min-height:100vh;
+}
+button, select, input { font:inherit; }
+button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+.app { width:min(900px,100%); margin:0 auto; padding:16px; }
+.header {
+  background:linear-gradient(135deg,#0f766e,#115e59); color:#fff;
+  border-radius:18px; padding:24px 20px; margin-bottom:16px;
+  text-align:center;
+}
+h1 { margin:0 0 6px; font-size:clamp(1.45rem,5vw,2rem); }
+.subtitle { margin:0; color:#d9f5f1; font-size:.95rem; }
+.panel {
+  background:var(--card); border:1px solid var(--border); border-radius:16px;
+  padding:20px; box-shadow:0 5px 18px rgba(15,23,42,.05);
+}
+#start-screen { text-align:center; }
+#start-screen h2 { margin-top:0; }
+.lang-buttons { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0; }
+.lang-choice {
+  min-height:58px; border:2px solid var(--border); background:#fff; border-radius:12px;
+  font-weight:700; cursor:pointer; padding:12px;
+}
+.lang-choice:active { transform:scale(.98); }
+.lang-choice.selected { border-color:var(--primary); background:#ecfdf5; color:var(--primary2); }
+.primary-btn,.secondary-btn {
+  border:0; border-radius:12px; min-height:52px; padding:12px 20px;
+  font-weight:700; cursor:pointer;
+}
+.primary-btn { background:var(--primary); color:#fff; }
+.primary-btn:hover { background:var(--primary2); }
+.secondary-btn { background:#e2e8f0; color:var(--text); }
+.controls { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:18px; }
+.exercise {
+  background:var(--card); border:1px solid var(--border); border-radius:16px;
+  padding:18px; margin:16px 0;
+}
+.exercise h2 { margin:0 0 4px; font-size:1.15rem; color:var(--primary2); }
+.exercise .desc { color:var(--muted); font-size:.9rem; margin:0 0 14px; }
+.question {
+  padding:15px 0; border-top:1px dashed var(--border);
+}
+.question:first-of-type { border-top:0; }
+.prompt { margin:0 0 11px; font-weight:600; }
+.options { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.option {
+  width:100%; min-height:48px; padding:10px 12px; text-align:left;
+  background:#f8fafc; border:1px solid var(--border); border-radius:10px;
+  cursor:pointer; color:var(--text);
+}
+.option.selected { background:#ccfbf1; border-color:var(--primary); color:#134e4a; font-weight:700; }
+.option:active { transform:scale(.99); }
+select, .text-input {
+  width:100%; min-height:48px; border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; background:#fff;
+}
+.inline-select { display:inline-block; width:auto; max-width:100%; margin:0 4px; vertical-align:middle; }
+.feedback {
+  margin-top:9px; padding:8px 10px; border-radius:8px; font-size:.88rem; display:none;
+}
+.feedback.good { display:block; background:var(--goodbg); color:var(--good); }
+.feedback.bad { display:block; background:var(--badbg); color:var(--bad); }
+.score {
+  display:none; text-align:center; padding:18px; border-radius:14px; margin:16px 0;
+  font-size:1.25rem; font-weight:800;
+}
+.score.visible { display:block; }
+.score.good { background:var(--goodbg); color:var(--good); }
+.score.bad { background:var(--badbg); color:var(--bad); }
+.hidden { display:none !important; }
+.status { color:var(--muted); font-size:.9rem; text-align:center; margin-top:8px; }
+@media (max-width:600px) {
+  .app { padding:10px; }
+  .header { border-radius:14px; padding:20px 14px; }
+  .panel,.exercise { padding:14px; border-radius:13px; }
+  .options,.controls,.lang-buttons { grid-template-columns:1fr; }
+  .option,.primary-btn,.secondary-btn { min-height:52px; }
+  .inline-select { display:block; width:100%; margin:8px 0 0; }
+  .question { padding:14px 0; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <h1 id="title">Medical English Quiz</h1>
+    <p class="subtitle" id="subtitle">A1–B1 • для студентов-медиков и врачей</p>
+  </header>
+
+  <section id="start-screen" class="panel">
+    <h2 id="start-title">Выберите язык игры</h2>
+    <p id="start-description">Инструкции, вопросы и результаты будут показаны на выбранном языке.</p>
+    <div class="lang-buttons">
+      <button class="lang-choice selected" id="ru-choice" onclick="chooseLanguage('ru')">🇷🇺 Русский</button>
+      <button class="lang-choice" id="kk-choice" onclick="chooseLanguage('kk')">🇰🇿 Қазақша</button>
+    </div>
+    <button class="primary-btn" id="start-btn" onclick="startGame()">Начать игру</button>
+  </section>
+
+  <main id="game" class="hidden">
+    <div id="score" class="score"></div>
+    <div id="quiz"></div>
+    <div class="controls">
+      <button class="primary-btn" id="submit-btn" onclick="checkAnswers()">Проверить ответы</button>
+      <button class="secondary-btn" id="new-btn" onclick="newGame()">Новая игра</button>
+    </div>
+    <div class="status" id="status"></div>
+  </main>
+</div>
+
+<script>
+const vocabDb = [
+  {
+    "en": "Chest tightness",
+    "ru": "стеснение в груди",
+    "kk": "кеуденің қысылуы"
+  },
+  {
+    "en": "Cough",
+    "ru": "кашель",
+    "kk": "жөтел"
+  },
+  {
+    "en": "Crackles",
+    "ru": "хрипы (мелкопузырчатые)",
+    "kk": "сырылдар (майда көпіршікті)"
+  },
+  {
+    "en": "Effusion",
+    "ru": "выпот / гидроторакс",
+    "kk": "плевралық сұйықтық / выпот"
+  },
+  {
+    "en": "Hemoptysis",
+    "ru": "кровохарканье",
+    "kk": "қан түкіру"
+  },
+  {
+    "en": "Malaise",
+    "ru": "недомогание",
+    "kk": "әлсіздік / мазасыздану"
+  },
+  {
+    "en": "Dyspnea",
+    "ru": "одышка",
+    "kk": "ентігу"
+  },
+  {
+    "en": "Sputum",
+    "ru": "мокрота",
+    "kk": "қақрық"
+  },
+  {
+    "en": "Wheezing",
+    "ru": "свистящее дыхание",
+    "kk": "ысқырықты дем"
+  },
+  {
+    "en": "Stridor",
+    "ru": "стридор (шипящий шум)",
+    "kk": "стридор (сырылды дем)"
+  },
+  {
+    "en": "Inhalation",
+    "ru": "вдох",
+    "kk": "тыныс алу (ішке)"
+  },
+  {
+    "en": "Exhalation",
+    "ru": "выдох",
+    "kk": "тыныс шығару"
+  },
+  {
+    "en": "Dehydration",
+    "ru": "обезвоживание",
+    "kk": "сусыздану"
+  },
+  {
+    "en": "Edema",
+    "ru": "отек",
+    "kk": "ісіну"
+  },
+  {
+    "en": "Fatigue",
+    "ru": "усталость / утомляемость",
+    "kk": "шаршау / шаршағыштық"
+  },
+  {
+    "en": "Flank pain",
+    "ru": "боль в боку",
+    "kk": "бүйірдегі ауырсыну"
+  },
+  {
+    "en": "Fluid overload",
+    "ru": "перегрузка жидкостью",
+    "kk": "сұйықтықтың шамадан тыс көбейуі"
+  },
+  {
+    "en": "Foamy urine",
+    "ru": "пенистая моча",
+    "kk": "көбікті несеп"
+  },
+  {
+    "en": "Hypertension",
+    "ru": "гипертония / повышенное давление",
+    "kk": "гипертония / жоғары қан қысымы"
+  },
+  {
+    "en": "Blurred vision",
+    "ru": "затуманенное зрение",
+    "kk": "көздің бұлдырауы"
+  },
+  {
+    "en": "Headache",
+    "ru": "головная боль",
+    "kk": "бас ауруы"
+  },
+  {
+    "en": "Neck stiffness",
+    "ru": "ригидность затылочных мышц",
+    "kk": "желке бұлшықеттерінің сіресуі"
+  },
+  {
+    "en": "Numbness",
+    "ru": "онемение",
+    "kk": "ұю / жансыздану"
+  },
+  {
+    "en": "Seizure",
+    "ru": "судороги / припадки",
+    "kk": "ұстама / талма"
+  },
+  {
+    "en": "Slurred speech",
+    "ru": "смазанная речь",
+    "kk": "түсініксіз сөйлеу"
+  },
+  {
+    "en": "Syncope",
+    "ru": "обморок",
+    "kk": "эпизодтық талып қалу / тану"
+  },
+  {
+    "en": "Tingling",
+    "ru": "покалывание",
+    "kk": "шаншу"
+  },
+  {
+    "en": "Vertigo",
+    "ru": "системное головокружение",
+    "kk": "бас айналуы"
+  },
+  {
+    "en": "Angina",
+    "ru": "стенокардия",
+    "kk": "стенокардия"
+  },
+  {
+    "en": "Dizziness",
+    "ru": "головокружение",
+    "kk": "бас айналу"
+  },
+  {
+    "en": "Pallor",
+    "ru": "бледность",
+    "kk": "бозару"
+  },
+  {
+    "en": "Palpitations",
+    "ru": "учащенное сердцебиение",
+    "kk": "жүректің жиі соғуы"
+  },
+  {
+    "en": "Radiating pain",
+    "ru": "иррадиирующая боль",
+    "kk": "басқа жаққа таралатын ауырсыну"
+  },
+  {
+    "en": "Retrosternal pain",
+    "ru": "боль за грудиной",
+    "kk": "төс артындағы ауырсыну"
+  },
+  {
+    "en": "Tinnitus",
+    "ru": "шум в ушах",
+    "kk": "құлақтағы шу"
+  },
+  {
+    "en": "Fever",
+    "ru": "лихорадка / жар",
+    "kk": "дене қызуының көтерілуі"
+  },
+  {
+    "en": "Rash",
+    "ru": "сыпь",
+    "kk": "бөртпе"
+  },
+  {
+    "en": "Stiffness",
+    "ru": "скованность",
+    "kk": "сіресу / қозғалыстың шектелуі"
+  },
+  {
+    "en": "Swelling",
+    "ru": "припухлость / отек",
+    "kk": "ісіну"
+  },
+  {
+    "en": "Sore throat",
+    "ru": "боль в горле",
+    "kk": "тамақтың ауруы"
+  },
+  {
+    "en": "Bleeding",
+    "ru": "кровотечение",
+    "kk": "қан кету"
+  },
+  {
+    "en": "Bloating",
+    "ru": "вздутие живота",
+    "kk": "іштің кебуі"
+  },
+  {
+    "en": "Constipation",
+    "ru": "запор",
+    "kk": "іш қату"
+  },
+  {
+    "en": "Heartburn",
+    "ru": "изжога",
+    "kk": "қыжыл"
+  },
+  {
+    "en": "Jaundice",
+    "ru": "желтуха",
+    "kk": "сары ауру"
+  },
+  {
+    "en": "Nausea",
+    "ru": "тошнота",
+    "kk": "көңіл айну"
+  },
+  {
+    "en": "Vomiting",
+    "ru": "рвота",
+    "kk": "құсу"
+  },
+  {
+    "en": "Weight gain",
+    "ru": "прибавка в весе",
+    "kk": "салмақ қосу"
+  },
+  {
+    "en": "Weight loss",
+    "ru": "потеря веса",
+    "kk": "салмақ жоғалту"
+  },
+  {
+    "en": "Itching / Pruritus",
+    "ru": "зуд",
+    "kk": "қышыну"
+  },
+  {
+    "en": "Fracture",
+    "ru": "перелом",
+    "kk": "сынық"
+  },
+  {
+    "en": "Insomnia",
+    "ru": "бессонница",
+    "kk": "ұйқысыздық"
+  }
+];
+
+const UI = {
+  ru: {
+    title:"Медицинский английский — Quiz",
+    subtitle:"A1–B1 • Для студентов-медиков и врачей",
+    startTitle:"Выберите язык игры",
+    startDescription:"Инструкции, вопросы и результаты будут показаны на выбранном языке.",
+    start:"Начать игру", submit:"Проверить ответы", newGame:"Новая игра",
+    ex1:"Упражнение 1: Multiple Choice", ex1d:"Выберите правильный перевод медицинского термина.",
+    ex2:"Упражнение 2: True / False", ex2d:"Определите, соответствует ли перевод английскому термину.",
+    ex3:"Упражнение 3: Fill in the blank", ex3d:"Выберите подходящий медицинский термин.",
+    ex4:"Упражнение 4: Перевод", ex4d:"Выберите правильный английский термин для русского слова/фразы.",
+    true:"Верно", false:"Неверно", choose:"— Выберите термин —",
+    q1:t=>`Как переводится “${t}”?`,
+    q2:(t,tr)=>`“${t}” = “${tr}”. Это верно?`,
+    q3:tr=>`Выберите термин: “${tr}” →`,
+    q4:tr=>`Выберите английский термин для: “${tr}”`,
+    correct:"✓ Правильно", wrong:"✗ Неправильно",
+    answer:"Правильный ответ:",
+    result:(s,t,p)=>`Результат: ${s} из ${t} (${p}%)`,
+    chooseLanguage:"Выберите язык игры"
+  },
+  kk: {
+    title:"Медициналық ағылшын тілі — Quiz",
+    subtitle:"A1–B1 • Медицина студенттері мен дәрігерлерге арналған",
+    startTitle:"Ойын тілін таңдаңыз",
+    startDescription:"Нұсқаулар, сұрақтар және нәтиже таңдалған тілде көрсетіледі.",
+    start:"Ойынды бастау", submit:"Жауаптарды тексеру", newGame:"Жаңа ойын",
+    ex1:"1-жаттығу: Multiple Choice", ex1d:"Медициналық терминнің дұрыс аудармасын таңдаңыз.",
+    ex2:"2-жаттығу: True / False", ex2d:"Ағылшын термині мен аудармасының сәйкестігін анықтаңыз.",
+    ex3:"3-жаттығу: Fill in the blank", ex3d:"Сәйкес медициналық терминді таңдаңыз.",
+    ex4:"4-жаттығу: Аударма", ex4d:"Қазақша сөзге/сөз тіркесіне сәйкес ағылшын терминін таңдаңыз.",
+    true:"Дұрыс", false:"Дұрыс емес", choose:"— Терминді таңдаңыз —",
+    q1:t=>`“${t}” сөзінің аудармасы қандай?`,
+    q2:(t,tr)=>`“${t}” = “${tr}”. Бұл дұрыс па?`,
+    q3:tr=>`Терминді таңдаңыз: “${tr}” →`,
+    q4:tr=>`“${tr}” үшін ағылшын терминін таңдаңыз`,
+    correct:"✓ Дұрыс", wrong:"✗ Қате",
+    answer:"Дұрыс жауап:",
+    result:(s,t,p)=>`Нәтиже: ${s} / ${t} (${p}%)`,
+    chooseLanguage:"Ойын тілін таңдаңыз"
+  }
+};
+
+let currentLang="ru";
+let quizData=[];
+let answers={};
+let started=false;
+
+function randomItems(arr,n){
+  return [...arr].sort(()=>Math.random()-0.5).slice(0,n);
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function chooseLanguage(lang){
+  currentLang=lang;
+  document.getElementById("ru-choice").classList.toggle("selected",lang==="ru");
+  document.getElementById("kk-choice").classList.toggle("selected",lang==="kk");
+  applyUI();
+}
+function applyUI(){
+  const u=UI[currentLang];
+  document.getElementById("title").textContent=u.title;
+  document.getElementById("subtitle").textContent=u.subtitle;
+  document.getElementById("start-title").textContent=u.startTitle;
+  document.getElementById("start-description").textContent=u.startDescription;
+  document.getElementById("start-btn").textContent=u.start;
+  if(started){
+    document.getElementById("submit-btn").textContent=u.submit;
+    document.getElementById("new-btn").textContent=u.newGame;
+  }
+}
+function startGame(){
+  started=true;
+  document.getElementById("start-screen").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  newGame();
+}
+function newGame(){
+  answers={};
+  const score=document.getElementById("score");
+  score.className="score";
+  score.textContent="";
+  generateQuiz();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function makeOptions(correct,n=3){
+  const pool=vocabDb.filter(x=>x.en!==correct.en);
+  return randomItems(pool,n).map(x=>x.en);
+}
+function generateQuiz(){
+  const used=new Set();
+  function take(n){
+    const available=vocabDb.filter(x=>!used.has(x.en));
+    const items=randomItems(available,n);
+    items.forEach(x=>used.add(x.en));
+    return items;
+  }
+
+  // Four exercises, five questions each. Each new game uses different terms.
+  const ex1=take(5);
+  const ex2=take(5);
+  const ex3=take(5);
+  const ex4=take(5);
+
+  quizData=[
+    {type:"mc", title:UI[currentLang].ex1, desc:UI[currentLang].ex1d, items:ex1},
+    {type:"tf", title:UI[currentLang].ex2, desc:UI[currentLang].ex2d, items:ex2},
+    {type:"dd", title:UI[currentLang].ex3, desc:UI[currentLang].ex3d, items:ex3},
+    {type:"tr", title:UI[currentLang].ex4, desc:UI[currentLang].ex4d, items:ex4}
+  ];
+  renderQuiz();
+}
+function renderQuiz(){
+  const root=document.getElementById("quiz");
+  root.innerHTML="";
+  quizData.forEach((ex,ei)=>{
+    const card=document.createElement("section");
+    card.className="exercise";
+    card.innerHTML=`<h2>${ex.title}</h2><p class="desc">${ex.desc}</p>`;
+
+    ex.items.forEach((item,qi)=>{
+      const id=`q_${ei}_${qi}`;
+      const q=document.createElement("div");
+      q.className="question";
+      let inner=`<p class="prompt">${qi+1}. `;
+
+      if(ex.type==="mc"){
+        const opts=randomItems([item,...vocabDb.filter(x=>x.en!==item.en).slice(0,8)],4);
+        inner+=UI[currentLang].q1(escapeHtml(item.en))+`</p><div class="options">`;
+        opts.forEach(o=>{
+          inner+=`<button class="option" data-id="${id}" data-value="${escapeHtml(o[currentLang])}" onclick="selectOption(this)">${escapeHtml(o[currentLang])}</button>`;
+        });
+        inner+="</div>";
+      } else if(ex.type==="tf"){
+        const isTrue=Math.random()<0.5;
+        const shown=isTrue?item:randomItems(vocabDb.filter(x=>x.en!==item.en),1)[0];
+        q.dataset.correct=isTrue?"true":"false";
+        inner+=UI[currentLang].q2(escapeHtml(item.en),escapeHtml(shown[currentLang]))+`</p><div class="options">
+          <button class="option" data-id="${id}" data-value="true" onclick="selectOption(this)">${UI[currentLang].true}</button>
+          <button class="option" data-id="${id}" data-value="false" onclick="selectOption(this)">${UI[currentLang].false}</button>
+        </div>`;
+      } else if(ex.type==="dd"){
+        const opts=randomItems([item,...vocabDb.filter(x=>x.en!==item.en)],4);
+        q.dataset.correct=item.en;
+        inner+=UI[currentLang].q3(escapeHtml(item[currentLang]))+`</p><select id="input_${id}" aria-label="answer"><option value="">${UI[currentLang].choose}</option>`;
+        opts.forEach(o=>inner+=`<option value="${escapeHtml(o.en)}">${escapeHtml(o.en)}</option>`);
+        inner+="</select>";
+      } else {
+        const opts=randomItems([item,...vocabDb.filter(x=>x.en!==item.en).slice(0,8)],4);
+        q.dataset.correct=item.en;
+        inner+=UI[currentLang].q4(escapeHtml(item[currentLang]))+`</p><div class="options">`;
+        opts.forEach(o=>inner+=`<button class="option" data-id="${id}" data-value="${escapeHtml(o.en)}" onclick="selectOption(this)">${escapeHtml(o.en)}</button>`);
+        inner+="</div>";
+      }
+      q.innerHTML=inner+`<div class="feedback" id="fb_${id}"></div>`;
+      card.appendChild(q);
+    });
+    root.appendChild(card);
+  });
+  document.getElementById("status").textContent=`${vocabDb.length} medical terms in the vocabulary bank`;
+}
+function selectOption(btn){
+  const id=btn.dataset.id;
+  answers[id]=btn.dataset.value;
+  btn.parentElement.querySelectorAll(".option").forEach(x=>x.classList.remove("selected"));
+  btn.classList.add("selected");
+}
+function normalize(s){
+  return String(s||"").trim().toLowerCase().replace(/[.?!,;:]/g,"");
+}
+function checkAnswers(){
+  let score=0,total=0;
+  quizData.forEach((ex,ei)=>{
+    ex.items.forEach((item,qi)=>{
+      total++;
+      const id=`q_${ei}_${qi}`;
+      const question=document.querySelector(`#quiz .question:nth-child(${qi+1})`);
+      // Locate by feedback ID, then climb to its question.
+      const fb=document.getElementById(`fb_${id}`);
+      const q=fb.parentElement;
+      let correct=item.en;
+      if(ex.type==="mc") correct=item[currentLang];
+      if(ex.type==="tf") correct=q.dataset.correct;
+      if(ex.type==="dd") correct=item.en;
+      if(ex.type==="tr") correct=item.en;
+
+      let user="";
+      if(ex.type==="dd") user=document.getElementById(`input_${id}`)?.value||"";
+      else user=answers[id]||"";
+
+      const ok=normalize(user)===normalize(correct);
+      fb.className="feedback "+(ok?"good":"bad");
+      fb.textContent=ok?UI[currentLang].correct:`${UI[currentLang].wrong} ${UI[currentLang].answer} ${correct}`;
+      if(ok) score++;
+    });
+  });
+  const pct=Math.round(score/total*100);
+  const box=document.getElementById("score");
+  box.className="score visible "+(pct>=70?"good":"bad");
+  box.textContent=UI[currentLang].result(score,total,pct);
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+applyUI();
+</script>
+</body>
+</html>
